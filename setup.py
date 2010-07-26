@@ -16,6 +16,7 @@ def get_version(version_tuple):
     return version
 
 init = os.path.join(os.path.dirname(__file__), 'django_elasticsearch', '__init__.py')
+print init
 version_line = filter(lambda l: l.startswith('VERSION'), open(init))[0]
 VERSION = get_version(eval(version_line.split('=')[-1]))
 print VERSION
