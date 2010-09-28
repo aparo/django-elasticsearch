@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-DESCRIPTION = "A ElasticSearch backend standing outside django (>= 1.2)"
+DESCRIPTION = "A ES backend standing outside django (>= 1.2)"
 
 LONG_DESCRIPTION = None
 try:

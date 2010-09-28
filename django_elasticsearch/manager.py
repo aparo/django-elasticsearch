@@ -154,7 +154,7 @@ class InternalModel:
         self.DoesNotExist = ObjectDoesNotExist
 
 class QuerySet(object):
-    """A set of results returned from a query. Wraps a ElasticSearch cursor,
+    """A set of results returned from a query. Wraps a ES cursor,
     providing :class:`~mongoengine.Document` objects as the results.
     """
 

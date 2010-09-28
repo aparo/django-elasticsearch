@@ -1,5 +1,5 @@
 
-class ElasticSearchRouter(object):
+class ESRouter(object):
     """A router to control all database operations on models in
     the myapp application"""
     def __init__(self):

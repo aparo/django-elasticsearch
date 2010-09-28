@@ -2,7 +2,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from creation import DatabaseCreation
 from operations import DatabaseOperations
-from pyes import ElasticSearch
+from pyes import ES
 
 from djangotoolbox.db.base import NonrelDatabaseFeatures, \
     NonrelDatabaseWrapper, NonrelDatabaseClient, \
@@ -58,7 +58,7 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
                 raise ImproperlyConfigured("PORT must be an integer")
 
 
-            self._connection = ElasticSearch(
+            self._connection = ES(
                                              "http://%s:%s"%(
                                                 self.settings_dict['HOST'],
                                                 port), debug=True

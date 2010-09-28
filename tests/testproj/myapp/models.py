@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_elasticsearch.fields import EmbeddedModel
-from djangotoolbox.fields import ListField, SortedListField, DictField, SetListField
+from djangotoolbox.fields import ListField, DictField, SetListField
 
 class Blog(models.Model):
     title = models.CharField(max_length=200, db_index=True)
@@ -46,8 +46,6 @@ class TestFieldModel(models.Model):
     title = models.CharField(max_length=200)
     mlist = ListField(unicode)
     mlist_default = ListField(unicode, default=["a", "b"])
-    slist = SortedListField(unicode)
-    slist_default = SortedListField(unicode, default=["b", "a"])
     mdict = DictField()
     mdict_default = DictField(default={"a": "a", 'b':1})
     mset = SetListField(unicode)

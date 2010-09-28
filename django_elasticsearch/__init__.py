@@ -11,3 +11,8 @@ __author__ = "Alberto Paro"
 __contact__ = "alberto.paro@gmail.com"
 __homepage__ = "http://github.com/aparo/django-elasticsearch/"
 __docformat__ = "restructuredtext"
+
+from django.conf import settings
+
+if not "django_elasticsearch" in settings.INSTALLED_APPS:
+    settings.INSTALLED_APPS.insert(0, "django_elasticsearch")

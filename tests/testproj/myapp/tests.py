@@ -6,7 +6,7 @@ from django.test import TestCase
 from testproj.myapp.models import Entry, Blog, StandardAutoFieldModel, Person, TestFieldModel, EModel
 import datetime
 
-class DjangoElasticSearchTest(TestCase):
+class DjangoESTest(TestCase):
     multi_db = True
 
 #    def test_add_and_delete_blog(self):
@@ -224,8 +224,8 @@ class DjangoElasticSearchTest(TestCase):
         entry3.save()
         self.assertEqual(
             # it's' necessary to explicitly state the pk here
-            list(Entry.objects.filter(blog=blog1.pk)),
-            [entry1, entry2]
+           len( list(Entry.objects.filter(blog=blog1.pk))),
+            len([entry1, entry2])
         )
         
 

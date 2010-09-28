@@ -105,7 +105,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 )
 
-DATABASE_ROUTERS = ['django_elasticsearch.router.ElasticSearchRouter']
+DATABASE_ROUTERS = ['django_elasticsearch.router.ESRouter']
 ELASTICSEARCH_MANAGED_APPS = ['testproj.myapp', ]
 ELASTICSEARCH_MANAGED_MODELS = ['mixed.record', ]
 

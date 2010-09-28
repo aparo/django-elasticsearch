@@ -3,7 +3,7 @@ import re
     
 class DatabaseOperations(object):
     """
-    ElasticSearch implementation of database operations.
+    ES implementation of database operations.
     """
     
     backend_name = "django.db.backends.elasticsearch"
