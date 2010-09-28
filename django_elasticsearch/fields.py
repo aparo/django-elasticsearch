@@ -64,7 +64,7 @@ class ElasticField(CharField):
             from django.db import connections
             elst = connections[self._meta.elst_connection]
             if not hasattr(self, att_cache_name) and not getattr(self, att_val_name, None) and getattr(self, att_id_name, None):
-#                elst = ES('http://127.0.0.1:9200/')
+                elst = ES('http://127.0.0.1:9200/')
                 val = elst.get(index, doc_type, id=getattr(self, att_id_name)).get("_source", None)
                 setattr(self, att_cache_name, val)
                 setattr(self, att_val_name, val)
