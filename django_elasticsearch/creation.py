@@ -1,4 +1,3 @@
-from pymongo.collection import Collection
 from djangotoolbox.db.base import NonrelDatabaseCreation
 
 TEST_DATABASE_PREFIX = 'test_'
@@ -36,11 +35,13 @@ class DatabaseCreation(NonrelDatabaseCreation):
 
     def sql_indexes_for_field(self, model, f, style):
         if f.db_index:
+            kwargs = {}
             opts = model._meta
             col = getattr(self.connection.db_connection, opts.db_table)
-            descending = getattr(model._mongo_meta, "descending_indexes", [])
+            descending = getattr(model._meta, "descending_indexes", [])
             direction =  (f.attname in descending and -1) or 1
-            col.ensure_index([(f.name, direction)], unique=f.unique)
+            kwargs["unique"] = f.unique
+            col.ensure_index([(f.name, direction)], **kwargs)
         return []
 
     def index_fields_group(self, model, group, style):
@@ -49,7 +50,7 @@ class DatabaseCreation(NonrelDatabaseCreation):
 
         fields = group.pop("fields")
 
-        if not isinstance(fields, list):
+        if not isinstance(fields, (list, tuple)):
             raise TypeError, "index_together fields has to be instance of list"
 
         opts = model._meta
@@ -74,8 +75,6 @@ class DatabaseCreation(NonrelDatabaseCreation):
         if not model._meta.managed or model._meta.proxy:
             return []
         fields = [ f for f in model._meta.local_fields if f.db_index]
-        if not fields and not hasattr(model._mongo_meta, "index_together"):
-            return []
         print "Installing index for %s.%s model" % (model._meta.app_label, model._meta.object_name)
         for f in fields:
             self.sql_indexes_for_field(model, f, style)

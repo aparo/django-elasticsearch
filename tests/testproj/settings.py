@@ -24,7 +24,7 @@ DATABASES = {
         'USER': '',
         'PASSWORD': '',
         'HOST': 'localhost',
-        'PORT': '9200',
+        'PORT': '9500',
         'SUPPORTS_TRANSACTIONS': False,
     },
 }

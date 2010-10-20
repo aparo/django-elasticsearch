@@ -13,12 +13,14 @@ from django.db.models.sql.constants import LOOKUP_SEP, MULTI, SINGLE
 from django.db.models.sql.where import AND, OR
 from django.db.utils import DatabaseError, IntegrityError
 from django.db.models.sql.where import WhereNode
-from django.db.models.fields import NOT_PROVIDED, AutoField
+from django.db.models.fields import NOT_PROVIDED
 from django.utils.tree import Node
 from pyes import MatchAllQuery, FilteredQuery, BoolQuery, StringQuery, ObjectId, WildcardQuery, RegexTermQuery, RangeQuery, ESRange
 from djangotoolbox.db.basecompiler import NonrelQuery, NonrelCompiler, \
     NonrelInsertCompiler, NonrelUpdateCompiler, NonrelDeleteCompiler
 from brainaetic.es.query import WildcardQuery
+from django.db.models.fields import AutoField
+
 
 TYPE_MAPPING_FROM_DB = {
     'unicode':  lambda val: unicode(val),
@@ -85,6 +87,7 @@ def _get_mapping(db_type, value, mapping):
     # TODO - what if the data is represented as list on the python side?
     if isinstance(value, list):
         return map(_func, value)
+    
     return _func(value)
 
 def python2db(db_type, value):
@@ -178,7 +181,9 @@ class DBQuery(NonrelQuery):
     def _get_query_type(self, column, lookup_type, db_type, value):
         if db_type == "unicode":
             if (lookup_type == "exact" or lookup_type == "iexact"):
-                return StringQuery('"%s"'%value, default_field=column)
+                q = StringQuery('"%s"'%value, default_field=column)
+                q.text = '"%s"'%value
+                return q
             if (lookup_type == "startswith" or lookup_type == "istartswith"):
                 return WildcardQuery(column, value)
             if (lookup_type == "endswith" or lookup_type == "iendswith"):
@@ -240,6 +245,19 @@ class SQLCompiler(NonrelCompiler):
         else:
             value = python2db(db_type, value)
         return value
+
+    def insert_params(self):
+        conn = self.connection
+        
+        params = {
+            'safe': conn.safe_inserts,
+        }
+
+        if conn.w:
+            params['w'] = conn.w
+
+        return params
+
 
 class SQLInsertCompiler(NonrelInsertCompiler, SQLCompiler):
     @safe_call

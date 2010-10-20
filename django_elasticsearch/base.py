@@ -1,7 +1,8 @@
 from django.core.exceptions import ImproperlyConfigured
 
-from creation import DatabaseCreation
-from operations import DatabaseOperations
+from .creation import DatabaseCreation
+from .operations import DatabaseOperations
+from .serializer import Decoder, Encoder
 from pyes import ES
 
 from djangotoolbox.db.base import NonrelDatabaseFeatures, \
@@ -23,9 +24,8 @@ class DatabaseIntrospection(NonrelDatabaseIntrospection):
         Show defined models
         """
         # TODO: get indexes
-#        return self.connection.db_connection.collection_names()
         return []
-    
+
     def sequence_list(self):
         # TODO: check if it's necessary to implement that
         pass
@@ -58,17 +58,12 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
                 raise ImproperlyConfigured("PORT must be an integer")
 
 
-            self._connection = ES(
-                                             "http://%s:%s"%(
-                                                self.settings_dict['HOST'],
-                                                port), debug=True
-            )
+            self._connection = ES("%s:%s"%(self.settings_dict['HOST'], port), 
+                                  decoder = Decoder, 
+                                  encoder=Encoder)
                                 
             self.db_name = self.settings_dict['NAME']
             self._db_connection = self._connection
-#
-#            from serializer import TransformDjango
-#            self._db_connection.add_son_manipulator(TransformDjango())
 
             # We're done!
             self._is_connected = True

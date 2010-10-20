@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models.fields import AutoField as DJAutoField
 from django.db.models import signals
 import uuid
-
+from .manager import Manager
 __all__ = ["EmbeddedModel"]
 __doc__ = "ES special fields"
 
@@ -121,18 +121,49 @@ def autofield_get_prep_value(value):
         return None
     return unicode(value)
 
+def pre_init_mongodb_signal(sender, args, **kwargs):
+    if sender._meta.abstract:
+        return
+
+    from django.conf import settings
+    
+    database = settings.DATABASES[sender.objects.db]
+    if not 'elasticsearch' in database['ENGINE']:
+        return
+    
+    if not hasattr(django, 'MODIFIED') and isinstance(sender._meta.pk, DJAutoField):
+        pk = sender._meta.pk
+        setattr(pk, "to_python", autofield_to_python)
+        setattr(pk, "get_prep_value", autofield_get_prep_value)
+
+class ESMeta(object):
+    pass
+  
 def add_elasticsearch_manager(sender, **kwargs):
     """
     Fix autofield
     """
+    from django.conf import settings
+    
     cls = sender
     database = settings.DATABASES[cls.objects.db]
-    if 'django_elasticsearch' in database['ENGINE']:
-#        print getattr(django, 'MODIFIED', "NOOO")
-        if not hasattr(django, 'MODIFIED') and isinstance(cls._meta.pk, DJAutoField):
-            pk = cls._meta.pk
-            setattr(pk, "to_python", autofield_to_python)
-            setattr(pk, "get_prep_value", autofield_get_prep_value)
-            cls = sender
+    if 'elasticsearch' in database['ENGINE']:
         if cls._meta.abstract:
             return
+
+        if getattr(cls, 'es', None) is None:
+            # Create the default manager, if needed.
+            try:
+                cls._meta.get_field('es')
+                raise ValueError("Model %s must specify a custom Manager, because it has a field named 'objects'" % cls.__name__)
+            except FieldDoesNotExist:
+                pass
+            setattr(cls, 'es', Manager())
+
+            es_meta = getattr(cls, "ESMeta", ESMeta).__dict__.copy()
+#            setattr(cls, "_meta", ESMeta())
+            for attr in es_meta:
+                if attr.startswith("_"):
+                    continue
+                setattr(cls._meta, attr, es_meta[attr])
+                

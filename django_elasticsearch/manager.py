@@ -1,9 +1,6 @@
 from django.db import connections
 from django.db.models.manager import Manager as DJManager
 
-import pymongo
-from pymongo.objectid import ObjectId
-
 import re
 import copy
 from .utils import dict_keys_to_str
@@ -15,8 +12,6 @@ except ImportError:
     class MultipleObjectsReturned(Exception):
         pass
     
-from django_elasticsearch.serializer import TransformDjango
-
 DoesNotExist = ObjectDoesNotExist
 
 __all__ = ['queryset_manager', 'Q', 'InvalidQueryError',
