@@ -57,13 +57,19 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
             except ValueError:
                 raise ImproperlyConfigured("PORT must be an integer")
 
-
-            self._connection = ES("%s:%s"%(self.settings_dict['HOST'], port), 
-                                  decoder = Decoder, 
-                                  encoder=Encoder)
-                                
             self.db_name = self.settings_dict['NAME']
-            self._db_connection = self._connection
 
+            self._connection = ES("%s:%s" % (self.settings_dict['HOST'], port),
+                                  decoder=Decoder,
+                                  encoder=Encoder,
+                                  autorefresh=True,
+                                  default_indexes=[self.db_name])
+
+            self._db_connection = self._connection
+            #auto index creation: check if to remove
+            try:
+                self._connection.create_index(self.db_name)
+            except:
+                pass
             # We're done!
             self._is_connected = True

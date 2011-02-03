@@ -13,7 +13,9 @@ __all__ = ["EmbeddedModel"]
 __doc__ = "ES special fields"
 
 class EmbeddedModel(models.Model):
-    _embedded_in =None
+    _embedded_in = None
+    class Meta:
+        abstract = True
 
     def save(self, *args, **kwargs):
         if self.pk is None:
@@ -24,7 +26,7 @@ class EmbeddedModel(models.Model):
 
     def serialize(self):
         if self.pk is None:
-            self.pk = unicode(ObjectId())
+            self.pk = "TODO"
             self.id = self.pk
         result = {'_app':self._meta.app_label,
             '_model':self._meta.module_name,
@@ -32,31 +34,31 @@ class EmbeddedModel(models.Model):
         for field in self._meta.fields:
             result[field.attname] = getattr(self, field.attname)
         return result
-    
+
 class ElasticField(CharField):
-    
+
     def __init__(self, *args, **kwargs):
         self.doc_type = kwargs.pop("doc_type", None)
-        
+
         # This field stores the document id and has to be unique
         kwargs["unique"] = True
-        
+
         # Let's force the field as db_index so we can get its value faster.
         kwargs["db_index"] = True
         kwargs["max_length"] = 255
-        
+
         super(ElasticField, self).__init__(*args, **kwargs)
 
     def contribute_to_class(self, cls, name):
         super(ElasticField, self).contribute_to_class(cls, name)
-        
-        
+
+
         index = cls._meta.db_table
         doc_type = self.doc_type
         att_id_name = "_%s_id" % name
         att_cache_name = "_%s_cache" % name
         att_val_name = "_%s_val" % name
-        
+
         def _get(self):
             """
             self is the model instance not the field instance
@@ -81,14 +83,14 @@ class ElasticField(CharField):
 
         setattr(cls, self.attname, property(_get, _set))
 
-    
+
 #    def db_type(self, connection):
 #        return "elst"
 
     def pre_save(self, model_instance, add):
         from django.db import connections
         elst = connections[model_instance._meta.elst_connection]
-        
+
         id = getattr(model_instance, "_%s_id" % self.attname, None)
         value = getattr(model_instance, "_%s_val" % self.attname, None)
         index = model_instance._meta.db_table
@@ -96,14 +98,14 @@ class ElasticField(CharField):
 
         if value == getattr(model_instance, "_%s_cache" % self.attname, None) and id:
             return id
-        
+
         if value:
 #            elst = ES('http://127.0.0.1:9200/')
             result = elst.index(doc=value, index=index, doc_type=doc_type, id=id or None)
             setattr(model_instance, "_%s_id" % self.attname, result["_id"])
             setattr(model_instance, "_%s_cache" % self.attname, value)
         return getattr(model_instance, "_%s_id" % self.attname, u"")
-    
+
 #
 # Fix standard models to work with elasticsearch
 #
@@ -126,11 +128,11 @@ def pre_init_mongodb_signal(sender, args, **kwargs):
         return
 
     from django.conf import settings
-    
+
     database = settings.DATABASES[sender.objects.db]
     if not 'elasticsearch' in database['ENGINE']:
         return
-    
+
     if not hasattr(django, 'MODIFIED') and isinstance(sender._meta.pk, DJAutoField):
         pk = sender._meta.pk
         setattr(pk, "to_python", autofield_to_python)
@@ -138,13 +140,13 @@ def pre_init_mongodb_signal(sender, args, **kwargs):
 
 class ESMeta(object):
     pass
-  
+
 def add_elasticsearch_manager(sender, **kwargs):
     """
     Fix autofield
     """
     from django.conf import settings
-    
+
     cls = sender
     database = settings.DATABASES[cls.objects.db]
     if 'elasticsearch' in database['ENGINE']:
@@ -166,4 +168,4 @@ def add_elasticsearch_manager(sender, **kwargs):
                 if attr.startswith("_"):
                     continue
                 setattr(cls._meta, attr, es_meta[attr])
-                
+

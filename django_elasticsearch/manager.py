@@ -124,10 +124,6 @@ class Q(object):
         else:
             op_js = Q.OPERATORS[op.strip('$')]
 
-        # Comparing two ObjectIds in Javascript doesn't work..
-        if isinstance(value, pymongo.objectid.ObjectId):
-            value = unicode(value)
-
         # Perform the substitution
         operation_js = op_js % {
             'field': key, 
@@ -307,7 +303,7 @@ class QuerySet(object):
             
             if parts[0] == "id":
                 parts[0] = "_id"
-                value = [isinstance(par, basestring) and ObjectId(par) or par for par in value]
+                value = [isinstance(par, basestring) or par for par in value]
                 
             if lookup_type in ['contains', 'icontains',
                                  'startswith', 'istartswith',
@@ -418,8 +414,8 @@ class QuerySet(object):
     def in_bulk(self, object_ids):
         """Retrieve a set of documents by their ids.
         
-        :param object_ids: a list or tuple of ``ObjectId``\ s
-        :rtype: dict of ObjectIds as keys and collection-specific
+        :param object_ids: a list or tuple of id's
+        :rtype: dict of ids as keys and collection-specific
                 Document subclasses as values.
 
         .. versionadded:: 0.3
