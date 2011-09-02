@@ -1,6 +1,3 @@
-import inspect
-import re
-    
 class DatabaseOperations(object):
     """
     ES implementation of database operations.

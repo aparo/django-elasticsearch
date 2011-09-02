@@ -48,7 +48,7 @@ class DatabaseCreation(NonrelDatabaseCreation):
     def sql_create_model(self, model, style, known_models=set()):
         from mapping import model_to_mapping
         mappings = model_to_mapping(model)
-        self.connection.db_connection.put_mapping(model._meta.db_table, mappings)
+        self.connection.db_connection.put_mapping(model._meta.db_table, {mappings.name:mappings.as_dict()})
         return [], {}
 
     def set_autocommit(self):

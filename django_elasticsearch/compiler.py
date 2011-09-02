@@ -124,17 +124,15 @@ class DBQuery(NonrelQuery):
     @safe_call
     def fetch(self, low_mark, high_mark):
         results = self._get_results()
-        #print "results:", results
-        hits = results['hits']['hits']
 
         if low_mark > 0:
-            hits = hits[low_mark:]
+            results = results[low_mark:]
         if high_mark is not None:
-            hits = hits[low_mark:high_mark - low_mark]
+            results = results[low_mark:high_mark - low_mark]
 
-        for hit in hits:
-            entity = hit["_source"]
-            entity['id'] = hit['_id']
+        for hit in results:
+            entity = hit.get_data()
+            entity['id'] = hit.meta.id
             yield entity
 
     @safe_call
@@ -176,9 +174,9 @@ class DBQuery(NonrelQuery):
         queryf = self._get_query_type(column, lookup_type, db_type, value)
 
         if negated:
-            self.db_query.add(NotFilter(queryf))
+            self.db_query.add([NotFilter(queryf)])
         else:
-            self.db_query.add(queryf)
+            self.db_query.add([queryf])
 
     def _get_query_type(self, column, lookup_type, db_type, value):
         if db_type == "unicode":
@@ -221,7 +219,7 @@ class DBQuery(NonrelQuery):
         if self._ordering:
             query.sort = self._ordering
         #print "query", self.query.tables, query
-        return self._connection.search(query, indexes=[self.connection.db_name], doc_types=self.query.model._meta.db_table)
+        return self._connection.search(query, indices=[self.connection.db_name], doc_types=self.query.model._meta.db_table)
 
 class SQLCompiler(NonrelCompiler):
     """

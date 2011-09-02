@@ -1,7 +1,6 @@
 from django.core.exceptions import ImproperlyConfigured
 
 from .creation import DatabaseCreation
-from .operations import DatabaseOperations
 from .serializer import Decoder, Encoder
 from pyes import ES
 
@@ -9,6 +8,23 @@ from djangotoolbox.db.base import NonrelDatabaseFeatures, \
     NonrelDatabaseWrapper, NonrelDatabaseClient, \
     NonrelDatabaseValidation, NonrelDatabaseIntrospection
 
+from djangotoolbox.db.base import NonrelDatabaseOperations
+
+class DatabaseOperations(NonrelDatabaseOperations):
+    compiler_module = __name__.rsplit('.', 1)[0] + '.compiler'
+
+    def sql_flush(self, style, tables, sequence_list):
+        for table in tables:
+            self.connection.db_connection.delete_mapping(self.connection.db_name, table)
+        return []
+
+    def check_aggregate_support(self, aggregate):
+        """
+        This function is meant to raise exception if backend does
+        not support aggregation.
+        """
+        pass
+    
 class DatabaseFeatures(NonrelDatabaseFeatures):
     string_based_auto_field = True
 
@@ -23,7 +39,7 @@ class DatabaseIntrospection(NonrelDatabaseIntrospection):
         """
         Show defined models
         """
-        # TODO: get indexes
+        # TODO: get indices
         return []
 
     def sequence_list(self):
@@ -63,7 +79,7 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
                                   decoder=Decoder,
                                   encoder=Encoder,
                                   autorefresh=True,
-                                  default_indexes=[self.db_name])
+                                  default_indices=[self.db_name])
 
             self._db_connection = self._connection
             #auto index creation: check if to remove

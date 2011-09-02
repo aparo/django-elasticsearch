@@ -24,7 +24,7 @@ DATABASES = {
         'USER': '',
         'PASSWORD': '',
         'HOST': 'localhost',
-        'PORT': '9500',
+        'PORT': '9200',
         'SUPPORTS_TRANSACTIONS': False,
     },
 }
@@ -100,7 +100,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'testproj.myapp',
     'testproj.mixed',
-    'south',
+    #'south',
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
 )
@@ -109,4 +109,4 @@ INSTALLED_APPS = (
 ELASTICSEARCH_MANAGED_APPS = ['testproj.myapp', ]
 ELASTICSEARCH_MANAGED_MODELS = ['mixed.record', ]
 
-SOUTH_DATABASE_ADAPTERS = { "default" : "django_elasticsearch.south"}
+#SOUTH_DATABASE_ADAPTERS = { "default" : "django_elasticsearch.south"}

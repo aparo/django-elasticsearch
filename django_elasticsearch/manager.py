@@ -228,18 +228,6 @@ class QuerySet(object):
             raise Exception("args len must be 1 when flat=True")
         
         return (flat and self.distinct(args[0] if not args[0] in ["id", "pk"] else "_id")) or zip(*[self.distinct(field if not field in ["id", "pk"] else "_id") for field in args])
-#                
-#            if self._document._meta['geo_indexes'] and \
-#               pymongo.version >= "1.5.1":
-#                from pymongo import GEO2D
-#                for index in self._document._meta['geo_indexes']:
-#                    self._collection.ensure_index([(index, GEO2D)])
-#            
-#            # Ensure all needed field indexes are created
-#            for field_name, field_instance in self._document._fields.iteritems():
-#                if field_instance.__class__.__name__ == 'GeoLocationField':
-#                    self._collection.ensure_index([(field_name, pymongo.GEO2D),])
-#        return self._collection_obj
 
     @property
     def _cursor(self):
